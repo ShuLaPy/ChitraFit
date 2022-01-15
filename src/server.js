@@ -3,6 +3,7 @@ const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
 const compression = require("compression");
+const {sequelize} = require("./sequelize")
 
 const app = express();
 
@@ -18,6 +19,14 @@ app.use(express.urlencoded({ extended: true }));
 app.use(compression());
 
 const PORT = process.env.PORT || 5500;
-app.listen(PORT, () => {
-    console.log(`🚀 ChitraFit server running on - ${PORT} `);
-})
+
+(async () => {
+  try {
+    await sequelize.sync({ alter: true });
+    app.listen(PORT, () => {
+      console.log(`🚀 ChitraFit server running on - ${PORT} `);
+    });
+  } catch (error) {
+    console.log("Unable to connect database");
+  }
+})();
