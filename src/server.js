@@ -3,7 +3,8 @@ const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
 const compression = require("compression");
-const {sequelize} = require("./sequelize")
+const {sequelize} = require("./sequelize");
+const routes = require('./routes/v1');
 
 const app = express();
 
@@ -17,6 +18,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use(compression());
+
+app.use('/api/v1', routes);
 
 const PORT = process.env.PORT || 5500;
 
