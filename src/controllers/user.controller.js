@@ -89,7 +89,7 @@ exports.getProfile = catchAsync(async (req, res, next) => {
   });
 
   if (!videos.length)
-    return res.status(200).json({ success: true, data: user });
+    return res.status(httpStatus.OK).json({ success: true, data: user });
 
   videos.forEach(async (video, index) => {
     const views = await View.count({ where: { videoId: video.id } });
@@ -97,12 +97,12 @@ exports.getProfile = catchAsync(async (req, res, next) => {
 
     if (index === videos.length - 1) {
       user.setDataValue("videos", videos);
-      return res.status(200).json({ success: true, data: user });
+      return res.status(httpStatus.OK).json({ success: true, data: user });
     }
   });
 });
 
-exports.recommendChannels = asyncHandler(async (req, res, next) => {
+exports.recommendChannels = catchAsync(async (req, res, next) => {
   const channels = await User.findAll({
     limit: 10,
     attributes: ["id", "username", "avatar", "channelDescription"],
@@ -114,7 +114,7 @@ exports.recommendChannels = asyncHandler(async (req, res, next) => {
   });
 
   if (!channels.length)
-    return res.status(200).json({ success: true, data: channels });
+    return res.status(httpStatus.OK).json({ success: true, data: channels });
 
   channels.forEach(async (channel, index) => {
     const subscribersCount = await Subscription.count({
@@ -135,16 +135,16 @@ exports.recommendChannels = asyncHandler(async (req, res, next) => {
     channel.setDataValue("videosCount", videosCount);
 
     if (index === channels.length - 1) {
-      return res.status(200).json({ success: true, data: channels });
+      return res.status(httpStatus.OK).json({ success: true, data: channels });
     }
   });
 });
 
-exports.getLikedVideos = asyncHandler(async (req, res, next) => {
+exports.getLikedVideos = catchAsync(async (req, res, next) => {
   return getVideos(VideoLike, req, res, next);
 });
 
-exports.getHistory = asyncHandler(async (req, res, next) => {
+exports.getHistory = catchAsync(async (req, res, next) => {
   return getVideos(View, req, res, next);
 });
 
@@ -170,7 +170,7 @@ const getVideos = async (model, req, res, next) => {
   });
 
   if (!videos.length) {
-    return res.status(200).json({ success: true, data: videos });
+    return res.status(httpStatus.OK).json({ success: true, data: videos });
   }
 
   videos.forEach(async (video, index) => {
@@ -178,12 +178,12 @@ const getVideos = async (model, req, res, next) => {
     video.setDataValue("views", views);
 
     if (index === videos.length - 1) {
-      return res.status(200).json({ success: true, data: videos });
+      return res.status(httpStatus.OK).json({ success: true, data: videos });
     }
   });
 };
 
-exports.getFeed = asyncHandler(async (req, res, next) => {
+exports.getFeed = catchAsync(async (req, res, next) => {
   const subscribedTo = await Subscription.findAll({
     where: {
       subscriber: req.user.id,
@@ -206,7 +206,7 @@ exports.getFeed = asyncHandler(async (req, res, next) => {
   });
 
   if (!feed.length) {
-    return res.status(200).json({ success: true, data: feed });
+    return res.status(httpStatus.OK).json({ success: true, data: feed });
   }
 
   feed.forEach(async (video, index) => {
@@ -214,12 +214,12 @@ exports.getFeed = asyncHandler(async (req, res, next) => {
     video.setDataValue("views", views);
 
     if (index === feed.length - 1) {
-      return res.status(200).json({ success: true, data: feed });
+      return res.status(httpStatus.OK).json({ success: true, data: feed });
     }
   });
 });
 
-exports.searchUser = asyncHandler(async (req, res, next) => {
+exports.searchUser = catchAsync(async (req, res, next) => {
   if (!req.query.searchterm) {
     return next({ message: "Please enter your search term", statusCode: 400 });
   }
@@ -234,7 +234,7 @@ exports.searchUser = asyncHandler(async (req, res, next) => {
   });
 
   if (!users.length)
-    return res.status(200).json({ success: true, data: users });
+    return res.status(httpStatus.OK).json({ success: true, data: users });
 
   users.forEach(async (user, index) => {
     const subscribersCount = await Subscription.count({
@@ -259,12 +259,12 @@ exports.searchUser = asyncHandler(async (req, res, next) => {
     user.setDataValue("isMe", isMe);
 
     if (index === users.length - 1) {
-      return res.status(200).json({ success: true, data: users });
+      return res.status(httpStatus.OK).json({ success: true, data: users });
     }
   });
 });
 
-exports.toggleSubscribe = asyncHandler(async (req, res, next) => {
+exports.toggleSubscribe = catchAsync(async (req, res, next) => {
   if (req.user.id === req.params.id) {
     return next({
       message: "You cannot to subscribe to your own channel",
@@ -302,5 +302,32 @@ exports.toggleSubscribe = asyncHandler(async (req, res, next) => {
     });
   }
 
-  res.status(200).json({ success: true, data: {} });
+  res.status(httpStatus.OK).json({ success: true, data: {} });
+});
+
+exports.recommendedVideos = catchAsync(async (req, res, next) => {
+  const videos = await Video.findAll({
+    attributes: [
+      "id",
+      "title",
+      "description",
+      "thumbnail",
+      "userId",
+      "createdAt",
+    ],
+    include: [{ model: User, attributes: ["id", "avatar", "username"] }],
+    order: [["createdAt", "DESC"]],
+  });
+
+  if (!videos.length)
+    return res.status(httpStatus.OK).json({ success: true, data: videos });
+
+  videos.forEach(async (video, index) => {
+    const views = await View.count({ where: { videoId: video.id } });
+    video.setDataValue("views", views);
+
+    if (index === videos.length - 1) {
+      return res.status(httpStatus.OK).json({ success: true, data: videos });
+    }
+  });
 });
