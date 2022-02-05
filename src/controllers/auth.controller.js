@@ -43,7 +43,7 @@ exports.login = catchAsync(async (req, res, next) => {
     expiresIn: process.env.JWT_EXPIRE,
   });
 
-  res.status(httpStatus.CREATED).json({ success: true, data: token });
+  res.status(httpStatus.OK).json({ success: true, data: token });
 });
 
 exports.me = catchAsync(async (req, res) => {

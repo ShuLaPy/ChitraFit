@@ -1,6 +1,8 @@
 const express = require("express");
 const authRoute = require("./auth.route");
 const userRoute = require("./user.route");
+const videoRoute = require("./video.route");
+const adminRoute = require("./admin.route");
 
 const router = express.Router();
 
@@ -12,6 +14,14 @@ const defaultRoutes = [
   {
     path: "/users",
     route: userRoute,
+  },
+  {
+    path: "/videos",
+    route: videoRoute,
+  },
+  {
+    path: "/admin",
+    route: adminRoute,
   }
 ];
 
